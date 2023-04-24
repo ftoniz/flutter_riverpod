@@ -1,0 +1,42 @@
+name: ft_flutter_riverpod
+description: A public Flutter project for learning Flutter with RiverPod in MVVM architecture.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=2.19.6 <3.0.0'
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_hooks: ^0.18.6
+  flutter_riverpod: ^2.3.5
+  hooks_riverpod: ^2.3.5
+  go_router: ^6.5.7
+  dio: ^5.1.1
+  json_annotation: ^4.8.0
+  riverpod_annotation: ^2.1.0
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  build_runner: ^2.3.3
+  json_serializable: ^6.6.1
+  flutter_lints: ^2.0.0
+
+  custom_lint: ^0.3.4
+  riverpod_generator: ^2.2.0
+  riverpod_lint: ^1.3.0
+
+flutter:
+  uses-material-design: true
