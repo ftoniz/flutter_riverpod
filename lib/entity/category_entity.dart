@@ -2,9 +2,8 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'category_entity.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class CategoryEntity {
-
   @JsonKey(name: 'API')
   final String? title;
 

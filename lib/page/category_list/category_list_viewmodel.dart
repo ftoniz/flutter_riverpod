@@ -1,44 +1,43 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ft_flutter_riverpod/entity/category_entity.dart';
 import 'package:ft_flutter_riverpod/repository/provider/category_list_provider.dart';
 import 'package:ft_flutter_riverpod/repository/response/category_list_response.dart';
 
-final categoryListViewProvider = ChangeNotifierProvider.autoDispose(
-  (ref) {
-    var listResponse = ref.watch(categoryListNotifierProvider);
-    var listNotifier = ref.watch(categoryListNotifierProvider.notifier);
-    return CategoryListViewModel(
-      listResponse: listResponse,
-      listNotifier: listNotifier,
-    );
-  },
-);
+final categoryListViewModelProvider = StateNotifierProvider.autoDispose<
+    CategoryListViewModelNotifier, CategoryListViewModelState>((ref) {
+  var listResponse = ref.watch(requestCategoryListProvider);
 
-class CategoryListViewModel extends ChangeNotifier {
-  CategoryListViewModel({
-    required CategoryListResponse? listResponse,
-    required CategoryListNotifier listNotifier,
+  var state = CategoryListViewModelState(
+    listResponse: listResponse,
+  );
+  return CategoryListViewModelNotifier(state);
+});
+
+class CategoryListViewModelNotifier
+    extends StateNotifier<CategoryListViewModelState> {
+  CategoryListViewModelNotifier(super.state);
+}
+
+class CategoryListViewModelState {
+  CategoryListViewModelState({
+    required AsyncValue<CategoryListResponse> listResponse,
   }) : super() {
-    _listResponse = listResponse;
-    _listNotifier = listNotifier;
-  }
+    _isLoading = listResponse.isLoading;
 
-  late CategoryListResponse? _listResponse;
-  late CategoryListNotifier _listNotifier;
+    listResponse.when(
+      data: (value) {
+        _list = value.data ?? [];
+      },
+      error: (error, stackTrace) {},
+      loading: () {
+        _isLoading = listResponse.isLoading;
+      },
+    );
+  }
 
   bool _isLoading = false;
-
-  List<CategoryEntity> get list => _listResponse?.data ?? [];
-
   bool get isLoading => _isLoading;
 
-  Future fetchCategoryList() async {
-    _isLoading = true;
-    notifyListeners();
-
-    await _listNotifier.fetch();
-    _isLoading = false;
-    notifyListeners();
-  }
+  List<CategoryEntity> _list = [];
+  List<CategoryEntity> get list => _list;
 }

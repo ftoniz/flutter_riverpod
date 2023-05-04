@@ -39,7 +39,7 @@ class CategoryListView extends HookWidget {
         ),
         body: HookConsumer(
           builder: (context, ref, _) {
-            var list = ref.watch(categoryListViewProvider).list;
+            var list = ref.watch(categoryListViewModelProvider).list;
             return ListView.separated(
               itemBuilder: (context, index) {
                 var category = list[index];

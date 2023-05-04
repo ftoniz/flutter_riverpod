@@ -1,45 +1,47 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ft_flutter_riverpod/entity/category_entity.dart';
 import 'package:ft_flutter_riverpod/repository/provider/category_list_provider.dart';
 import 'package:ft_flutter_riverpod/repository/response/category_list_response.dart';
 
-final categoryInfoViewModelProvider = ChangeNotifierProvider.autoDispose(
-  (ref) {
-    var listResponse = ref.watch(categoryListNotifierProvider);
-    var categoryTitle = ref.watch(_selectedCategoryTitleNotifierProvider);
-    var categoryTitleNotifier =
-        ref.watch(_selectedCategoryTitleNotifierProvider.notifier);
-    var viewModel = CategoryInfoViewModel(
-      listResponse: listResponse,
-      categoryTitle: categoryTitle,
-      selectedTitleNotifier: categoryTitleNotifier,
-    );
+final categoryInfoViewModelProvider = StateNotifierProvider.autoDispose<
+    CategoryInfoViewModelNotifier, CategoryInfoViewModelState>((ref) {
+  var listResponse = ref.watch(requestCategoryListProvider);
+  var title = ref.watch(_selectedCategoryTitleProvider);
+  var state = CategoryInfoViewModelState(
+    listResponse: listResponse,
+    title: title,
+    onChangeCategory: (title) {
+      ref.read(_selectedCategoryTitleProvider.notifier).state = title;
+    },
+  );
+  return CategoryInfoViewModelNotifier(state);
+});
 
-    return viewModel;
-  },
-);
+class CategoryInfoViewModelNotifier
+    extends StateNotifier<CategoryInfoViewModelState> {
+  CategoryInfoViewModelNotifier(super.state);
+}
 
-class CategoryInfoViewModel extends ChangeNotifier {
-  CategoryInfoViewModel({
-    required CategoryListResponse? listResponse,
-    required String categoryTitle,
-    required SelectedCategoryTitleNotifier selectedTitleNotifier,
+class CategoryInfoViewModelState {
+  CategoryInfoViewModelState({
+    required AsyncValue<CategoryListResponse> listResponse,
+    required String title,
+    required this.onChangeCategory,
   }) : super() {
-    _listResponse = listResponse;
-    _categoryTitle = categoryTitle;
-    _selectedTitleNotifier = selectedTitleNotifier;
+    _title = title;
+    listResponse.whenData((value) {
+      _list = value.data ?? [];
+    });
   }
 
-  late CategoryListResponse? _listResponse;
-  late SelectedCategoryTitleNotifier _selectedTitleNotifier;
+  final void Function(String) onChangeCategory;
 
-  String _categoryTitle = '';
+  List<CategoryEntity> _list = [];
+
+  String _title = '';
 
   CategoryEntity? get category {
-    var list = _listResponse?.data
-            ?.where((element) => element.title == _categoryTitle) ??
-        [];
+    var list = _list.where((element) => element.title == _title);
     if (list.isNotEmpty) {
       return list.first;
     }
@@ -47,51 +49,37 @@ class CategoryInfoViewModel extends ChangeNotifier {
   }
 
   void previousCategory() {
-    var list = _listResponse?.data ?? [];
-    var currentIndex =
-        list.indexWhere((element) => element.title == _categoryTitle);
+    var currentIndex = _list.indexWhere((element) => element.title == _title);
     if (currentIndex < 0) return;
 
     var isFirstItem = currentIndex == 0;
     if (!isFirstItem) {
-      setSelectCategory(title: list[currentIndex - 1].title ?? '');
+      setSelectCategory(title: _list[currentIndex - 1].title ?? '');
     } else {
-      setSelectCategory(title: list.last.title ?? '');
+      setSelectCategory(title: _list.last.title ?? '');
     }
   }
 
   void nextCategory() {
-    var list = _listResponse?.data ?? [];
-    var currentIndex =
-        list.indexWhere((element) => element.title == _categoryTitle);
-    var isLastItem = list.length == currentIndex + 1;
+    var currentIndex = _list.indexWhere((element) => element.title == _title);
+    var isLastItem = _list.length == currentIndex + 1;
     if (currentIndex < 0) return;
     if (!isLastItem) {
       var nextIndex = 1;
-      while ((list[currentIndex + nextIndex].title ?? '') == _categoryTitle) {
+      while ((_list[currentIndex + nextIndex].title ?? '') == _title) {
         nextIndex++;
       }
-      setSelectCategory(title: list[currentIndex + nextIndex].title ?? '');
+      setSelectCategory(title: _list[currentIndex + nextIndex].title ?? '');
     } else {
-      setSelectCategory(title: list.first.title ?? '');
+      setSelectCategory(title: _list.first.title ?? '');
     }
   }
 
   void setSelectCategory({required String title}) {
-    _selectedTitleNotifier.setSelected(title);
+    onChangeCategory(title);
   }
 }
 
-final _selectedCategoryTitleNotifierProvider =
-    StateNotifierProvider<SelectedCategoryTitleNotifier, String>(
-  (ref) => SelectedCategoryTitleNotifier(''),
+final _selectedCategoryTitleProvider = StateProvider<String>(
+  (ref) => '',
 );
-
-class SelectedCategoryTitleNotifier extends StateNotifier<String> {
-  SelectedCategoryTitleNotifier(super.state);
-
-  // ignore: use_setters_to_change_properties
-  void setSelected(String title) {
-    state = title;
-  }
-}
