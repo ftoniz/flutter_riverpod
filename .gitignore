@@ -2,6 +2,7 @@
 
 # Files and directories created by pub
 .dart_tool/
+.vscode/
 .packages
 build/
 
@@ -25,3 +26,4 @@ doc/api/
 .flutter-plugins-dependencies
 
 *.g.dart
+
